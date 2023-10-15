@@ -2,16 +2,10 @@ const express = require("express");
 const app = express();
 const routes = require("./routes/route");
 const mongoose = require("mongoose");
-const passport = require("passport");
-const user = require("./models/user");
 const middleware = require("./middleware/middlware");
-const cors = require("cors");
-
 //Load Environment Variables
 require("dotenv").config();
-app.use(cors());
 const url = process.env.MONGOLAB_URI;
-
 async function connection() {
   try {
     await mongoose.connect(url);
@@ -28,8 +22,6 @@ app.set("view engine", "ejs");
 app.set("views", "./views");
 // call the routes in route folder
 app.use(middleware, routes);
-// url connection to db  from .env
-//connection function
 
 // start of the serveur
 const PORT = process.env.PORT;

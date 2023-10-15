@@ -1,30 +1,23 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../API/axios";
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
+    const config = {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    };
     const fetchData = async () => {
-      const token = await localStorage.getItem("authToken");
-      if (token) {
-        try {
-          const response = await axios.get("http://localhost:3500/users", {
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setUsers(response.data);
-        } catch (error) {
-          setErrorMessage("Error fetching users:");
-          console.error("Error fetching users:", error);
-        }
-      } else {
-        setErrorMessage("Token not found in localStorage.");
+      try {
+        const response = await axios.get("/users", config);
+        setUsers(response.data);
+      } catch (error) {
+        setErrorMessage("Error fetching users:");
+        console.error("Error fetching users:", error);
       }
     };
     fetchData();

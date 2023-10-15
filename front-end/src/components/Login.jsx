@@ -1,34 +1,43 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router";
-
+import AuthContext from "../../context/AuthProvider";
+import axios from "../../API/axios";
 export default function Login() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
+  const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(username, password);
     try {
-      console.log("aaaaaa");
-      const response = await fetch("http://localhost:3500/login", {
-        method: "POST",
+      const data = {
+        username: username,
+        password: password,
+      };
+      const config = {
         headers: {
           "Content-Type": "application/json",
+          withCredentials: true,
         },
-        body: JSON.stringify({ username, password }),
-      });
-      if (response.status === 200) {
-        const data = await response.json();
-        const token = data.token;
-        localStorage.setItem("authToken", token);
-        navigate("/dashboard");
-      } else {
-        setErrorMessage(
-          "Authentication failed. Please check your credentials."
+      };
+      await axios
+        .post("/login", JSON.stringify(data), config)
+        .then((response) => {
+          navigate("/dashboard");
+        })
+        .then((data) => {
+          console.log("token:");
+          console.log(data?.authToken);
+          const accessToken = data?.authToken;
+          setAuth({ username, password, accessToken });
+        })
+        .catch((err) =>
+          setErrorMessage(
+            "Authentication failed. Please check your credentials."
+          )
         );
-      }
     } catch (error) {
       console.error("Login error:", error);
       setErrorMessage("bad connexion to the serveur pls try again ! ");

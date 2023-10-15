@@ -5,19 +5,39 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const [tel, setTel] = useState("");
+  const [confirm_password, setConfPass] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
   const navigate = useNavigate();
-  const postSignUpDetails = () => {
-    const data = fetch("http://localhost:3500/");
+  const info = {
+    email,
+    username,
+    password,
+    confirm_password,
   };
-  // to prevent submit of form
+  const postSignUpDetails = async () => {
+    try {
+      const response = await fetch("http://localhost:3500/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(info),
+      });
+      if (response.ok) {
+        navigate("/login");
+      } else {
+        setErrorMessage("Registration failed. Please check your data.");
+      }
+    } catch (error) {
+      setErrorMessage("Registration failed. Please try again later.");
+    }
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
-    //👇🏻 Call it within the submit function
     postSignUpDetails();
-    console.log({ email, username, tel, password });
+    console.log({ email, username, password, confirm_password });
   };
-  // to redirect user to login page
   const gotoLoginPage = () => {
     navigate("/");
   };
@@ -32,39 +52,43 @@ export default function Signup() {
           id="email"
           defaultValue={email}
           required
-          onClick={(e) => setEmail(e.value.target)}
+          onChange={(e) => setEmail(e.target.value)}
         />
-        <label htmlFor="email">Username</label>
+        <label htmlFor="Username">Username</label>
         <input
           type="text"
           name="username"
           id="username"
           defaultValue={username}
           required
-          onClick={(e) => setUsername(e.value.target)}
+          onChange={(e) => setUsername(e.target.value)}
         />
-        <label htmlFor="email">Phone Number</label>
+        <label htmlFor="Password">Password</label>
         <input
-          type="text"
-          name="tel"
-          id="tel"
-          defaultValue={tel}
-          required
-          onClick={(e) => setTel(e.value.target)}
-        />
-        <label htmlFor="email">Password</label>
-        <input
-          type="text"
+          type="password"
           name="password"
           id="password"
-          defaultValue={password}
           required
-          onClick={(e) => setPassword(e.value.target)}
+          onChange={(e) => setPassword(e.target.value)}
         />
-        <button className="signupBtn">SIGN UP</button>
+        <label htmlFor="Password">Confirm Password</label>
+        <input
+          type="password"
+          name="password"
+          id=""
+          required
+          onChange={(e) => setConfPass(e.target.value)}
+        />
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+
+        <button className="signupBtn" type="submit">
+          SIGN UP
+        </button>
         <p>
           Already have an account?{" "}
-          <span className="link" onClick={gotoLoginPage}></span>
+          <span className="link" onClick={gotoLoginPage}>
+            Go to Login
+          </span>
         </p>
       </form>
     </div>

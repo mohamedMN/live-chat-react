@@ -1,28 +1,16 @@
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
-const user = require("../models/user");
+const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
-async function register(pass, confirmPass, username, email) {
-  if (pass === confirmPass) {
-    // generate salt
-    const salt = await bcrypt.genSalt(10);
-    // hash the password
-    const hashedPassword = await bcrypt.hash(pass, salt);
-    // replace plain text password with hashed password
-    let password = hashedPassword;
-    const user = new User({
-      username: username,
-      password: password,
-      email: email,
-    });
-
-    console.log(user);
-    await user.save();
-    res.render("login");
-  } else {
-    return res.status(404).json({ message: "no matching in password" });
-  }
+async function register(pass, username, email) {
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(pass, salt);
+  const user = new User({
+    username: username,
+    password: hashedPassword,
+    email: email,
+  });
+  console.log(user);
+  await user.save();
+  return user;
 }
-
-module.exports = {register};
+module.exports = { register };

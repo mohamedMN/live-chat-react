@@ -11,7 +11,9 @@ const {
 const LocalStrategy = require("passport-local").Strategy;
 const { register } = require("../controlles/controls");
 const bodyParser = require("body-parser");
+
 //=====================
+
 // ROUTES
 //=====================
 // the login page
@@ -20,6 +22,7 @@ app.use(express.json()); // This middleware parses JSON request bodies
 app.use(bodyParser.json());
 
 passport.use(new LocalStrategy(authUser));
+
 // to check if session of user is set
 // checkLoggedIn = (req, res, next) => {
 //   if (req.isAuthenticated()) return res.redirect("/dashboard");
@@ -41,36 +44,54 @@ router.post("/logout", function (req, res, next) {
     res.redirect("/");
   });
 });
+// handling register form
+router.post("/register", async (req, res) => {
+  if (req.body.confirm_password !== req.body.password) {
+    return res.status(400).json({ message: "Passwords do not match" });
+  }
+  try {
+    const user = await register(
+      req.body.password,
+      req.body.username,
+      req.body.email
+    );
+    if (user) {
+      return res.status(201).json({ message: "User successfully created" });
+    } else {
+      return res.status(500).json({ message: "Registration failed" });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ message: "Registration failed" });
+  }
+});
 //handle login
-router.post("/login", (req, res) => {
-  passport.authenticate("local", { session: false }, (err, user) => {
+router.post("/login", async (req, res) => {
+  await passport.authenticate("local", { session: false }, (err, user) => {
     if (err || !user) {
       return res.status(401).json({ message: "Authentication failed!" });
     }
-    const token = generateToken(user);
-    // Send the token as a JSON response
-    return res.status(200).json({ token });
+    const accessToken = generateToken(user);
+
+    res.cookie("authToken", accessToken, {
+      httpOnly: true,
+      sameSite: "None",
+      maxAge: 24 * 60 * 60 * 1000, // maxAge: 1day
+    });
+
+    res.status(200).json({ accessToken, message: "Authentication successful" });
   })(req, res);
 });
-// handling register form
-router.post("/register", async (req, res) => {
-  register(
-    req.body.password,
-    req.body.confirm_password,
-    req.body.username,
-    req.body.email
-  );
-});
+
 // handle the get users api
-router.get("/users", verifyToken, async (req, res) => {
+router.get("/users", async (req, res) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
-  } catch (err) {
-    res.status(500).json({ error: "Error fetching users" });
+  } catch (error) {
+    res.status(500).json({ message: "error in mangose function" });
   }
 });
-
 //Handling user logout
 router.get("/logout", (req, res) => {});
 

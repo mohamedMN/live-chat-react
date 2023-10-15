@@ -25,12 +25,10 @@ const secretKey = process.env.secretKey;
 
 // Implement JWT generation function
 function generateToken(user) {
-  console.log(user);
-  return jwt.sign(user.toJSON(), secretKey, { expiresIn: 60 * 60 });
+  return jwt.sign(user.toJSON(), secretKey, { expiresIn: 60 * 60 }); // expiresIn : 1H
 }
 // handle the JWT acces
 function verifyToken(req, res, next) {
-  const token = req.headers.authorization;
   if (!token) {
     return res.status(401).json({ message: "Token is missing" });
   }
