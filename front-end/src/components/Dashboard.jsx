@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "../../API/axios";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import AuthContext from "../../context/AuthProvider";
 import useRefreshToken from "../../hooks/useRefreshToken";
 const Dashboard = () => {
@@ -9,6 +9,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
   const refresh = useRefreshToken();
+  const axiosPrivate = useAxiosPrivate();
   useEffect(() => {
     const config = {
       // headers: { "Content-Type": "application/json" },
@@ -17,7 +18,7 @@ const Dashboard = () => {
     };
     const fetchData = async () => {
       try {
-        const response = await axios.get("/users", config);
+        const response = await axiosPrivate.get("/users", config);
         setUsers(response.data);
       } catch (error) {
         setErrorMessage("Error fetching users:");
@@ -38,6 +39,12 @@ const Dashboard = () => {
         <h2 style={{ marginBottom: "30px" }}>HELLO NISWITH</h2>
         <button className="signOutBtn" onClick={handleSignOut}>
           SIGN OUT
+        </button>
+        <button
+          style={{ backgroundColor: "#0000FF", color: "white" }}
+          onClick={() => navigate("/Profile")}
+        >
+          GO To Profile
         </button>
         <button onClick={() => refresh()}>Refresh</button>
         <br />

@@ -25,7 +25,7 @@ const secretKey = process.env.secretKey;
 
 // Implement JWT generation function
 function generateToken(user, temps) {
-  return jwt.sign(user.toJSON(), secretKey, { expiresIn: temps }); // expiresIn : 1H
+  return jwt.sign(user, secretKey, { expiresIn: temps }); // expiresIn : 1H
 }
 // handle the JWT acces
 function verifyToken(req, res, next) {

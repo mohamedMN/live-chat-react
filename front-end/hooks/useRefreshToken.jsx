@@ -5,18 +5,20 @@ export default function useRefreshToken() {
   const { auth, setAuth } = useContext(AuthContext);
   const refresh = async () => {
     const data = {
+      password: auth.password,
       username: auth.username,
     };
     const config = {
       headers: {
         "Content-Type": "application/json",
         withCredentials: true,
+        Authorization: `Bearer ${auth.accessToken}`,
       },
     };
     const response = await axios.post("/refresh", JSON.stringify(data), config);
     setAuth((prev) => {
       console.log(JSON.stringify(prev));
-      console.log(response.data.accessToken);
+      console.log("Refresh Token :  " + response.data.accessToken);
       return {
         ...prev,
         accessToken: response.data.accessToken,
