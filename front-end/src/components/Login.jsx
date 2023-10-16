@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import AuthContext from "../../context/AuthProvider";
 import axios from "../../API/axios";
@@ -7,40 +7,47 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const { setAuth } = useContext(AuthContext);
+
   const navigate = useNavigate();
-  const handleSubmit = async (e) => {
+  const userRef = useRef();
+
+  // useEFFECT to focus on input
+  useEffect(() => {
+    userRef.current.focus();
+  }, []);
+  // to prevent page loading
+  const handleSubmit = (e) => {
     e.preventDefault();
     console.log(username, password);
+
+    const data = {
+      username: username,
+      password: password,
+    };
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        withCredentials: true,
+      },
+    };
     try {
-      const data = {
-        username: username,
-        password: password,
-      };
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          withCredentials: true,
-        },
-      };
-      await axios
+      axios
         .post("/login", JSON.stringify(data), config)
         .then((response) => {
+          const accessToken = response.data.accessToken;
+          // console.log("accessToken:" + response?.data?.accessToken);
+          setAuth({ username, password, accessToken });
           navigate("/dashboard");
         })
-        .then((data) => {
-          console.log("token:");
-          console.log(data?.authToken);
-          const accessToken = data?.authToken;
-          setAuth({ username, password, accessToken });
-        })
-        .catch((err) =>
+        .catch((err) => {
           setErrorMessage(
             "Authentication failed. Please check your credentials."
-          )
-        );
+          );
+          console.error("axios error:", err);
+        });
     } catch (error) {
-      console.error("Login error:", error);
       setErrorMessage("bad connexion to the serveur pls try again ! ");
+      console.error("Login error:", error);
     }
   };
   const gotoSignUpPage = () => {
@@ -58,6 +65,7 @@ export default function Login() {
             name="username"
             value={username}
             required
+            ref={userRef}
             onChange={(e) => setUserName(e.target.value)}
           />
           <label htmlFor="password">Password</label>

@@ -3,6 +3,7 @@ const app = express();
 const routes = require("./routes/route");
 const mongoose = require("mongoose");
 const middleware = require("./middleware/middlware");
+
 //Load Environment Variables
 require("dotenv").config();
 const url = process.env.MONGOLAB_URI;
@@ -16,10 +17,6 @@ async function connection() {
 }
 //call up conncetion function
 connection();
-// Définir le moteur de vues EJS
-app.set("view engine", "ejs");
-// Définir la répertoire des vues
-app.set("views", "./views");
 // call the routes in route folder
 app.use(middleware, routes);
 

@@ -1,15 +1,19 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../API/axios";
-
+import AuthContext from "../../context/AuthProvider";
+import useRefreshToken from "../../hooks/useRefreshToken";
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  const { auth } = useContext(AuthContext);
+  const refresh = useRefreshToken();
   useEffect(() => {
     const config = {
-      headers: { "Content-Type": "application/json" },
+      // headers: { "Content-Type": "application/json" },
       withCredentials: true,
+      headers: { Authorization: `Bearer ${auth.accessToken}` },
     };
     const fetchData = async () => {
       try {
@@ -35,6 +39,8 @@ const Dashboard = () => {
         <button className="signOutBtn" onClick={handleSignOut}>
           SIGN OUT
         </button>
+        <button onClick={() => refresh()}>Refresh</button>
+        <br />
         <span>
           {errorMessage && <p className="error-message">{errorMessage}</p>}
         </span>

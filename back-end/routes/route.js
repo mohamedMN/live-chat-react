@@ -71,11 +71,10 @@ router.post("/login", async (req, res) => {
     if (err || !user) {
       return res.status(401).json({ message: "Authentication failed!" });
     }
-    const accessToken = generateToken(user);
+    const accessToken = generateToken(user, 24 * 60 * 60 * 1000);
 
     res.cookie("authToken", accessToken, {
       httpOnly: true,
-      sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000, // maxAge: 1day
     });
 
@@ -83,8 +82,16 @@ router.post("/login", async (req, res) => {
   })(req, res);
 });
 
+router.post("/refresh", (req, res) => {
+  const accessToken = generateToken(req.body.username, 900);
+  console.log("refresh has been called : " + accessToken);
+  res
+    .status(200)
+    .json({ accessToken, message: "the refresh token is created" });
+});
+
 // handle the get users api
-router.get("/users", async (req, res) => {
+router.get("/users", verifyToken, async (req, res) => {
   try {
     const users = await User.find();
     res.status(200).json(users);

@@ -2,11 +2,14 @@ const middleware = require("express")();
 const passport = require("passport");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+
 const cors = require("cors");
-
-// Middleware to enable CORS and cookie parsing
-middleware.use(cors());
-
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+middleware.use(cors(corsOptions));
 // initiale the passportJS
 middleware.use(
   session({

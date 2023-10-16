@@ -24,11 +24,12 @@ const authUser = async (username, password, done) => {
 const secretKey = process.env.secretKey;
 
 // Implement JWT generation function
-function generateToken(user) {
-  return jwt.sign(user.toJSON(), secretKey, { expiresIn: 60 * 60 }); // expiresIn : 1H
+function generateToken(user, temps) {
+  return jwt.sign(user.toJSON(), secretKey, { expiresIn: temps }); // expiresIn : 1H
 }
 // handle the JWT acces
 function verifyToken(req, res, next) {
+  token = req.headers.authorization;
   if (!token) {
     return res.status(401).json({ message: "Token is missing" });
   }
