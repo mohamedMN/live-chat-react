@@ -21,26 +21,49 @@ const authUser = async (username, password, done) => {
 };
 
 // Define your secret key for JWT generation
-const secretKey = process.env.secretKey;
+const Access_Secret_Key = process.env.Access_Secret_Key;
 
 // Implement JWT generation function
 function generateToken(user, temps) {
-  return jwt.sign(user, secretKey, { expiresIn: temps }); // expiresIn : 1H
+  return jwt.sign(user, Access_Secret_Key, { expiresIn: temps }); // expiresIn : 1H
 }
 // handle the JWT acces
-function verifyToken(req, res, next) {
-  token = req.headers.authorization;
-  if (!token) {
-    return res.status(401).json({ message: "Token is missing" });
+const verifyRefreshToken = async (req, res, next) => {
+  // token = req.headers.authorization;
+  // console.log("token  : " + token);
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "refreshToken is missing" });
   }
-  jwt.verify(token.split(" ")[1], secretKey, (err, decoded) => {
+  const user = await User.findOne({ refreshToken: refreshToken });
+
+  if (!user)
+    return res.status(403).json({ message: "no user with that token " });
+
+  jwt.verify(refreshToken.split(" ")[1], Access_Secret_Key, (err, decoded) => {
     if (err) {
-      return res.status(401).json({ message: "Invalid token" });
+      return res.status(402).json({ message: "Invalid token" });
     }
     req.user = decoded;
     next();
   });
-}
+};
+
+const verifyAccessToken = async (req, res, next) => {
+  token = req.headers.authorization;
+  console.log("token  : " + token);
+
+  if (!token) {
+    return res.status(401).json({ message: "AccessToken  is missing" });
+  }
+  jwt.verify(token.split(" ")[1], Access_Secret_Key, (err, decoded) => {
+    if (err) {
+      return res.status(402).json({ message: "Invalid token" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
 
 passport.serializeUser((userObj, done) => {
   done(null, userObj);
@@ -49,4 +72,9 @@ passport.deserializeUser((userObj, done) => {
   done(null, userObj);
 });
 
-module.exports = { authUser, generateToken, verifyToken };
+module.exports = {
+  authUser,
+  generateToken,
+  verifyRefreshToken,
+  verifyAccessToken,
+};

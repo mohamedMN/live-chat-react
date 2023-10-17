@@ -8,6 +8,7 @@ async function register(pass, username, email) {
     username: username,
     password: hashedPassword,
     email: email,
+    refreshToken: "",
   });
   console.log(user);
   await user.save();

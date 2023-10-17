@@ -6,7 +6,8 @@ const User = require("../models/user");
 const {
   authUser,
   generateToken,
-  verifyToken,
+  verifyAccessToken,
+  verifyRefreshToken,
 } = require("../controlles/passport-config");
 const LocalStrategy = require("passport-local").Strategy;
 const { register } = require("../controlles/controls");
@@ -67,32 +68,57 @@ router.post("/register", async (req, res) => {
 });
 //handle login
 router.post("/login", async (req, res) => {
-  await passport.authenticate("local", { session: false }, (err, user) => {
-    if (err || !user) {
-      return res.status(401).json({ message: "Authentication failed!" });
-    }
-    const accessToken = generateToken(
-      { id: user._id, username: user.username },
-      24 * 60 * 60 * 1000
-    );
-    res.cookie("authToken", accessToken, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // maxAge: 1day
-    });
-    res.status(200).json({ accessToken, message: "Authentication successful" });
-  })(req, res);
+  try {
+    await passport.authenticate(
+      "local",
+      { session: false },
+      async (err, user) => {
+        if (err || !user) {
+          return res.status(401).json({ message: "Authentication failed!" });
+        }
+        const accessToken = generateToken(
+          { id: user._id, username: user.username },
+          10 // Expired: 30 seconds
+        );
+
+        const refreshToken = generateToken(
+          { id: user._id, username: user.username },
+          24 * 60 * 60 * 1000 // Expired: 1 day
+        );
+        // Update the user with the refreshToken
+        await User.updateOne(
+          { _id: user._id },
+          { $set: { refreshToken: refreshToken } }
+        );
+        res.cookie("authToken", refreshToken, {
+          httpOnly: true,
+          maxAge: 24 * 60 * 60 * 1000, // MaxAge: 1 day
+        });
+
+        res
+          .status(200)
+          .json({ accessToken, message: "Authentication successful" });
+      }
+    )(req, res);
+  } catch (error) {
+    console.error("Error in login:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 // the refresh token if the accessToken finished
-router.post("/refresh", verifyToken, (req, res) => {
-  let username = req.body.username;
-  const accessToken = generateToken({ username }, 900); //expired: 15min
+router.post("/refresh", verifyRefreshToken, (req, res) => {
+  let username = req.user.username;
+  console.log("username : " + username);
+  const accessToken = generateToken({ username }, 10); //expired: 15min
   res
     .status(200)
     .json({ accessToken, message: "the refresh token is created" });
 });
 
 // handle the get users api
-router.get("/users", verifyToken, async (req, res) => {
+router.get("/users", verifyAccessToken, async (req, res) => {
+  const authToken = req.cookies['authToken'];
+  console.log("refreshToken :" + authToken);
   try {
     const users = await User.find();
     res.status(200).json(users);

@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt");
 const passport = require("passport");
 
+
 const passportLocalMongoose = require("passport-local-mongoose");
 
 const userSchema = new Schema({
@@ -18,6 +19,9 @@ const userSchema = new Schema({
   email: {
     type: String,
     required: true,
+  },
+  refreshToken: {
+    type: String,
   },
 });
 

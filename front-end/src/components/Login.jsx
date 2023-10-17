@@ -35,7 +35,6 @@ export default function Login() {
         .post("/login", JSON.stringify(data), config)
         .then((response) => {
           const accessToken = response.data.accessToken;
-          // console.log("accessToken:" + response?.data?.accessToken);
           setAuth({ username, password, accessToken });
           navigate("/dashboard");
         })

@@ -1,15 +1,16 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+// import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import AuthContext from "../../context/AuthProvider";
 import useRefreshToken from "../../hooks/useRefreshToken";
+import axios from "../../API/axios";
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
   const refresh = useRefreshToken();
-  const axiosPrivate = useAxiosPrivate();
+  // const axiosPrivate = useAxiosPrivate();
   useEffect(() => {
     const config = {
       // headers: { "Content-Type": "application/json" },
@@ -18,7 +19,7 @@ const Dashboard = () => {
     };
     const fetchData = async () => {
       try {
-        const response = await axiosPrivate.get("/users", config);
+        const response = await axios.get("/users", config);
         setUsers(response.data);
       } catch (error) {
         setErrorMessage("Error fetching users:");
