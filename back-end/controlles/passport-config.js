@@ -19,6 +19,15 @@ const authUser = async (username, password, done) => {
     return done(err);
   }
 };
+passport.serializeUser((user, done) => {
+  console.log(user);
+  done(null, user);
+});
+passport.deserializeUser((userObj, done) => {
+  console.log("---------> Deserialize Id");
+  console.log(userObj);
+  done(null, userObj);
+});
 // Define your secret key for JWT generation
 const Access_Secret_Key = process.env.Access_Secret_Key;
 
@@ -63,22 +72,13 @@ const verifyAccessToken = async (req, res, next) => {
     if (err) {
       return res.status(402).json({ message: "Invalid token" });
     }
+    req.user = decoded;
+
     // req.user = decoded;
     next();
   });
 };
 
-passport.serializeUser((user, done) => {
-  done(null, user._id);
-});
-// passport.deserializeUser((userObj, done) => {
-//   done(null, userObj);
-// });
-passport.deserializeUser((id, done) => {
-  User.findById(id, (err, user) => {
-    done(err, user);
-  });
-});
 module.exports = {
   authUser,
   generateToken,
