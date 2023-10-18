@@ -1,7 +1,7 @@
 import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import AuthContext from "../../context/AuthProvider";
-import axios from "../../API/axios";
+import { axiosPrivate } from "../../API/axios";
 export default function Login() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +16,7 @@ export default function Login() {
     userRef.current.focus();
   }, []);
   // to prevent page loading
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(username, password);
 
@@ -25,27 +25,25 @@ export default function Login() {
       password: password,
     };
     const config = {
+      withCredentials: true,
       headers: {
         "Content-Type": "application/json",
-        withCredentials: true,
       },
     };
     try {
-      axios
-        .post("/login", JSON.stringify(data), config)
-        .then((response) => {
-          const accessToken = response.data.accessToken;
-          setAuth({ username, password, accessToken });
-          navigate("/dashboard");
-        })
-        .catch((err) => {
-          setErrorMessage(
-            "Authentication failed. Please check your credentials."
-          );
-          console.error("axios error:", err);
-        });
+      const response = await axiosPrivate.post("/login", data, config);
+
+      if (response.status >= 200 && response.status <= 400) {
+        const accessToken = response.data.accessToken;
+        setAuth({ username, password, accessToken });
+        navigate("/dashboard");
+      } else {
+        setErrorMessage(
+          "Authentication failed. Please check your credentials."
+        );
+      }
     } catch (error) {
-      setErrorMessage("bad connexion to the serveur pls try again ! ");
+      setErrorMessage("Bad connection to the server. Please try again!");
       console.error("Login error:", error);
     }
   };
@@ -71,7 +69,7 @@ export default function Login() {
           <input
             type="Password"
             id="Password"
-            name="Password"
+            name="password"
             value={password}
             required
             onChange={(e) => setPassword(e.target.value)}

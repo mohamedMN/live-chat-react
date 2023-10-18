@@ -1,4 +1,4 @@
-import axios from "../API/axios";
+import { axiosPrivate } from "../API/axios";
 import AuthContext from "../context/AuthProvider";
 import { useContext } from "react";
 export default function useRefreshToken() {
@@ -8,14 +8,8 @@ export default function useRefreshToken() {
       password: auth.password,
       username: auth.username,
     };
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-        withCredentials: true,
-        Authorization: `Bearer ${auth.accessToken}`,
-      },
-    };
-    const response = await axios.post("/refresh", JSON.stringify(data), config);
+
+    const response = await axiosPrivate.post("/refresh", JSON.stringify(data));
     setAuth((prev) => {
       console.log(JSON.stringify(prev));
       console.log("Refresh Token :  " + response.data.accessToken);

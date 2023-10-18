@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 bodyParser = require("body-parser");
 const cors = require("cors");
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173", "http://localhost:3500"],
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
@@ -19,7 +19,7 @@ middleware
     session({
       secret: "secret",
       resave: false,
-      saveUninitialized: true,
+      saveUninitialized: false,
     })
   )
 
@@ -29,7 +29,7 @@ middleware
   // Configure body-parser middleware
   .use(bodyParser.json())
   .use(bodyParser.urlencoded({ extended: true }))
-  .use(cookieParser());
+  .use(cookieParser("secret3"));
 
 // middleware.use(printData)
 module.exports = middleware;

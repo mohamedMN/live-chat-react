@@ -69,61 +69,60 @@ router.post("/register", async (req, res) => {
 //handle login
 router.post("/login", async (req, res) => {
   try {
-    await passport.authenticate(
-      "local",
-      { session: false },
-      async (err, user) => {
+    const user = await new Promise((resolve, reject) => {
+      passport.authenticate("local", { session: true }, (err, user) => {
         if (err || !user) {
-          return res.status(401).json({ message: "Authentication failed!" });
+          return reject("Authentication failed!");
         }
-        const accessToken = generateToken(
-          { id: user._id, username: user.username },
-          10 // Expired: 30 seconds
-        );
-
-        const refreshToken = generateToken(
-          { id: user._id, username: user.username },
-          24 * 60 * 60 * 1000 // Expired: 1 day
-        );
-        // Update the user with the refreshToken
-        await User.updateOne(
-          { _id: user._id },
-          { $set: { refreshToken: refreshToken } }
-        );
-        res.cookie("authToken", refreshToken, {
-          httpOnly: true,
-          maxAge: 24 * 60 * 60 * 1000, // MaxAge: 1 day
-        });
-
-        res
-          .status(200)
-          .json({ accessToken, message: "Authentication successful" });
-      }
-    )(req, res);
+        resolve(user);
+      })(req, res);
+    });
+    const { _id } = user;
+    let options = {
+      maxAge: 24 * 60 * 60 * 1000, // would expire after 1 day
+      httpOnly: true,
+      signed: true,
+    };
+    const accessToken = generateToken({ id: _id }, 5); // Expire in 10 seconds
+    const refreshToken = generateToken({ id: _id }, 24 * 60 * 60 * 1000); // Expire in 1 day
+    res.cookie("refreshToken", refreshToken, options);
+    // Update the user with the refreshToken
+    await User.updateOne({ _id }, { $set: { refreshToken } });
+    console.log("req.refreshToken has been created ");
+    res.status(200).json({ accessToken, message: "Authentication successful" });
   } catch (error) {
     console.error("Error in login:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 // the refresh token if the accessToken finished
 router.post("/refresh", verifyRefreshToken, (req, res) => {
-  let username = req.user.username;
-  console.log("username : " + username);
   const accessToken = generateToken({ username }, 10); //expired: 15min
   res
     .status(200)
     .json({ accessToken, message: "the refresh token is created" });
 });
-
 // handle the get users api
-router.get("/users", verifyAccessToken, async (req, res) => {
-  const authToken = req.cookies['authToken'];
-  console.log("refreshToken :" + authToken);
+router.get("/users", async (req, res) => {
+  let username = req.user;
+  console.log("username " + username);
+  // const { refreshToken } = req.signedCookies;
+  // console.log("req.refreshToken " + refreshToken);
   try {
     const users = await User.find();
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "error in mangose function" });
+  }
+});
+
+router.get("/profile", verifyAccessToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "error in findById function" });
   }
 });
 //Handling user logout

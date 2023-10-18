@@ -2,24 +2,17 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import AuthContext from "../../context/AuthProvider";
-import useRefreshToken from "../../hooks/useRefreshToken";
-import axios from "../../API/axios";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-  const { auth } = useContext(AuthContext);
-  const refresh = useRefreshToken();
-  // const axiosPrivate = useAxiosPrivate();
+  // const { auth } = useContext(AuthContext);
+  const axiosPrivate = useAxiosPrivate();
   useEffect(() => {
-    const config = {
-      // headers: { "Content-Type": "application/json" },
-      withCredentials: true,
-      headers: { Authorization: `Bearer ${auth.accessToken}` },
-    };
     const fetchData = async () => {
       try {
-        const response = await axios.get("/users", config);
+        const response = await axiosPrivate.get("/users");
         setUsers(response.data);
       } catch (error) {
         setErrorMessage("Error fetching users:");
@@ -47,8 +40,7 @@ const Dashboard = () => {
         >
           GO To Profile
         </button>
-        <button onClick={() => refresh()}>Refresh</button>
-        <br />
+
         <span>
           {errorMessage && <p className="error-message">{errorMessage}</p>}
         </span>
