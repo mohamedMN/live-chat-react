@@ -15,6 +15,7 @@ async function connection() {
     console.error(err);
   }
 }
+
 //call up conncetion function
 connection();
 // call the routes in route folder

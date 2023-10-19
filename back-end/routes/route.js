@@ -10,10 +10,21 @@ const {
 } = require("../controlles/passport-config");
 const LocalStrategy = require("passport-local").Strategy;
 const { register } = require("../controlles/controls");
-const bodyParser = require("body-parser");
 
 passport.use(new LocalStrategy(authUser));
 
+// multer config
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./assets/uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
 //   // JWT && Math.random or uuid => userid && csrf
 // to log out
 router.post("/logout", function (req, res, next) {
@@ -25,16 +36,17 @@ router.post("/logout", function (req, res, next) {
   });
 });
 // handling register form
-router.post("/register", async (req, res) => {
+router.post("/register", upload.single("image"), async (req, res) => {
+  const password = req.body.password;
+  const username = req.body.username;
+  const email = req.body.email;
+  const filename = req.file.filename;
+  const path = req.file.path;
   if (req.body.confirm_password !== req.body.password) {
     return res.status(400).json({ message: "Passwords do not match" });
   }
   try {
-    const user = await register(
-      req.body.password,
-      req.body.username,
-      req.body.email
-    );
+    const user = await register(password, username, email, filename, path);
     if (user) {
       return res.status(201).json({ message: "User successfully created" });
     } else {
@@ -64,7 +76,7 @@ router.post("/login", async (req, res) => {
       httpOnly: true,
       signed: true,
     };
-    const accessToken = generateToken({ id: _id }, 1000000); // Expire in 10 seconds
+    const accessToken = generateToken({ id: _id }, 2); // Expire in 10 seconds
     const refreshToken = generateToken({ id: _id }, 24 * 60 * 60 * 1000); // Expire in 1 day
     res.cookie("refreshToken", refreshToken, options);
     // Update the user with the refreshToken
@@ -79,15 +91,15 @@ router.post("/login", async (req, res) => {
 
 // the refresh token if the accessToken finished
 router.post("/refresh", verifyRefreshToken, (req, res) => {
+  const username = req.session.user.username;
   const accessToken = generateToken({ username }, 10); //expired: 15min
   res
     .status(200)
     .json({ accessToken, message: "the refresh token is created" });
 });
 // handle the get users api
-router.get("/users", async (req, res) => {
-  const username = req.session.user._id; // akhiran 7alitha 
-  console.log("Username from session: " + username);
+router.get("/users", verifyAccessToken, async (req, res) => {
+  // const id = req.session.user._id; // akhiran 7alitha
   // const { refreshToken } = req.signedCookies;
   // console.log("req.refreshToken " + refreshToken);
   try {
@@ -98,10 +110,17 @@ router.get("/users", async (req, res) => {
   }
 });
 
-router.get("/profile", async (req, res) => {
+router.get("/profile", verifyAccessToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    res.status(200).json(user);
+    const id = req.session.user._id;
+    console.log("id :" + id);
+    const user = await User.findById(id);
+    const USER = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    };
+    res.status(200).json(USER);
   } catch (error) {
     res.status(500).json({ message: "error in findById function" });
   }

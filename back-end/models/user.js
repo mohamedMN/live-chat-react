@@ -1,8 +1,5 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const bcrypt = require("bcrypt");
-const passport = require("passport");
-
 
 const passportLocalMongoose = require("passport-local-mongoose");
 
@@ -22,6 +19,11 @@ const userSchema = new Schema({
   },
   refreshToken: {
     type: String,
+  },
+  image: {
+    filename: String,
+    path: String,
+    createdAt: { type: Date, default: Date.now },
   },
 });
 

@@ -1,16 +1,21 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
-async function register(pass, username, email) {
+async function register(password, username, email, filename, path) {
   const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(pass, salt);
+  const Password = password.toString();
+  const hashedPassword = await bcrypt.hash(Password, salt);
+  console.log(password +""+username+" email "+email+" filename "+filename+" path "+path)
   const user = new User({
     username: username,
     password: hashedPassword,
     email: email,
     refreshToken: "",
+    image: {
+      filename: filename,
+      path: path,
+    },
   });
-  console.log(user);
   await user.save();
   return user;
 }

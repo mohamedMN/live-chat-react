@@ -42,15 +42,17 @@ async function verifyRefreshToken(req, res, next) {
     if (!refreshToken) {
       return res.status(401).json({ message: "No refresh token provided" });
     }
-    const username = req.user.username;
-    console.log("username   in very " + username);
+    const id = req.session.user._id;
+    const username = req.session.user.username;
+    console.log("verifyRefreshToken has been called !!!! : ");
     const refreshTokenDoc = await User.findOne({ username: username });
     if (!refreshTokenDoc || refreshTokenDoc.refreshToken !== refreshToken) {
       return res
         .status(403)
         .json({ message: "Forbidden: Invalid refresh token" });
     }
-    // const user = jwt.verify(refreshToken, Access_Secret_Key);
+
+    // const user = jwt.verify(id, refreshToken, Access_Secret_Key);
     // if (!user) {
     //   return res.status(401).json({ message: "Invalid refresh token" });
     // }
@@ -63,8 +65,7 @@ async function verifyRefreshToken(req, res, next) {
 
 const verifyAccessToken = async (req, res, next) => {
   token = req.headers["authorization"];
-  console.log("token  verifyAccessToken has ben caled: " + token);
-
+  console.log("token  verifyAccessToken has ben caled: ");
   if (!token) {
     return res.status(401).json({ message: "AccessToken  is missing" });
   }
@@ -72,9 +73,6 @@ const verifyAccessToken = async (req, res, next) => {
     if (err) {
       return res.status(402).json({ message: "Invalid token" });
     }
-    req.user = decoded;
-
-    // req.user = decoded;
     next();
   });
 };

@@ -1,31 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../../public/css/personalProfile.css";
 import { useNavigate } from "react-router-dom";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 const PersonalInfo = () => {
+  const axiosPrivate = useAxiosPrivate();
+  const [errorMessage, setErrorMessage] = useState("");
+
   const navigate = useNavigate();
+  const [user, setuser] = useState("");
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axiosPrivate.get("/profile");
+        setuser(response.data);
+      } catch (error) {
+        setErrorMessage("Error fetching Personal:");
+        console.error("Error fetching Personal:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
-    <section id="personal-info" className="center">
-      <h2>Personal Information</h2>
-      <div className="info-container">
-        <div className="info-item">
-          <h3>Name</h3>
-          <p>Your Name</p>
-        </div>
-        <div className="info-item">
-          <h3>Email</h3>
-          <p>yourname@example.com</p>
-        </div>
-        <div className="info-item">
-          <h3>Location</h3>
-          <p>Your City, Country</p>
-        </div>
-        <button className="signOutBtn" onClick={() => navigate("/dashboard")}>
-          GO To Dashboard
-        </button>
+    <div className="profile">
+      <div className="profile-image">{/* image */}</div>
+      <div className="profile-info">
+        {user && (
+          <>
+            <h2 className="username">{user.username}</h2>
+            <p className="email">{user.email}</p>
+          </>
+        )}
       </div>
-    </section>
+      <button className="signOutBtn" onClick={() => navigate("/dashboard")}>
+        GO To Dashboard
+      </button>
+      <span>
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+      </span>
+    </div>
   );
 };
 
