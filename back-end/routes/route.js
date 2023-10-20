@@ -113,7 +113,8 @@ router.get("/users", verifyAccessToken, async (req, res) => {
 router.get("/profile", verifyAccessToken, async (req, res) => {
   try {
     const id = req.session.user._id;
-    console.log("id :" + id);
+    const username = req.session.user.username;
+    console.log("username :" + username);
     const user = await User.findById(id);
     const USER = {
       id: user._id,
