@@ -37,16 +37,22 @@ router.post("/logout", function (req, res, next) {
 });
 // handling register form
 router.post("/register", upload.single("image"), async (req, res) => {
-  const password = req.body.password;
-  const username = req.body.username;
-  const email = req.body.email;
-  const filename = req.file.filename;
-  const path = req.file.path;
-  if (req.body.confirm_password !== req.body.password) {
+  const { password, username, email } = req.body;
+  const { filename, path } = req.file;
+  const data = req.file.data; // makhadamash yadak fih
+  console.log("data : " + data);
+  if (req.body.confirm_password !== password) {
     return res.status(400).json({ message: "Passwords do not match" });
   }
   try {
-    const user = await register(password, username, email, filename, path);
+    const user = await register(
+      password,
+      username,
+      email,
+      filename,
+      path,
+      data
+    );
     if (user) {
       return res.status(201).json({ message: "User successfully created" });
     } else {
@@ -76,7 +82,7 @@ router.post("/login", async (req, res) => {
       httpOnly: true,
       signed: true,
     };
-    const accessToken = generateToken({ id: _id }, 2); // Expire in 10 seconds
+    const accessToken = generateToken({ id: _id }, 100000); // Expire in 10 seconds
     const refreshToken = generateToken({ id: _id }, 24 * 60 * 60 * 1000); // Expire in 1 day
     res.cookie("refreshToken", refreshToken, options);
     // Update the user with the refreshToken
@@ -120,6 +126,12 @@ router.get("/profile", verifyAccessToken, async (req, res) => {
       id: user._id,
       username: user.username,
       email: user.email,
+      image: {
+        image: user.image.image,
+        filename: user.image.filename,
+        path: user.image.path,
+        createdAt: user.image.createdAt,
+      },
     };
     res.status(200).json(USER);
   } catch (error) {

@@ -44,9 +44,8 @@ export default function Signup() {
   };
 
   // Handle file input change
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setImage(selectedFile);
+  const handleFileChange = (e) => { 
+    setImage(e.target.files[0]);
   };
   return (
     // component form of sign in
