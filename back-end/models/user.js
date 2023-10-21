@@ -22,8 +22,6 @@ const userSchema = new Schema({
   },
   image: {
     data: Buffer,
-    filename: String,
-    path: String,
     createdAt: { type: Date, default: Date.now },
   },
 });

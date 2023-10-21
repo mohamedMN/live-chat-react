@@ -16,15 +16,17 @@ passport.use(new LocalStrategy(authUser));
 // multer config
 const multer = require("multer");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./assets/uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
+const storage = multer.memoryStorage(); // Store the image data in memory as a buffer
+const upload = multer({ storage });
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "./assets/uploads/");
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + "-" + file.originalname);
+//   },
+// });
+// const upload = multer({ storage: storage });
 //   // JWT && Math.random or uuid => userid && csrf
 // to log out
 router.post("/logout", function (req, res, next) {
@@ -38,21 +40,15 @@ router.post("/logout", function (req, res, next) {
 // handling register form
 router.post("/register", upload.single("image"), async (req, res) => {
   const { password, username, email } = req.body;
-  const { filename, path } = req.file;
-  const data = req.file.data; // makhadamash yadak fih
-  console.log("data : " + data);
+  // const filename = req.file.filename;
+  // const path = req.file.path;
+  const data = req.file.buffer;
+  // console.log("data : " + data);
   if (req.body.confirm_password !== password) {
     return res.status(400).json({ message: "Passwords do not match" });
   }
   try {
-    const user = await register(
-      password,
-      username,
-      email,
-      filename,
-      path,
-      data
-    );
+    const user = await register(password, username, email, data);
     if (user) {
       return res.status(201).json({ message: "User successfully created" });
     } else {
@@ -109,8 +105,9 @@ router.get("/users", verifyAccessToken, async (req, res) => {
   // const { refreshToken } = req.signedCookies;
   // console.log("req.refreshToken " + refreshToken);
   try {
+    const username = req.session.user.username;
     const users = await User.find();
-    res.status(200).json(users);
+    res.status(200).json({users, username});
   } catch (error) {
     res.status(500).json({ message: "error in mangose function" });
   }
@@ -122,15 +119,14 @@ router.get("/profile", verifyAccessToken, async (req, res) => {
     const username = req.session.user.username;
     console.log("username :" + username);
     const user = await User.findById(id);
+    const encodedImage = user.image.data.toString("base64");
+
     const USER = {
       id: user._id,
       username: user.username,
       email: user.email,
       image: {
-        image: user.image.image,
-        filename: user.image.filename,
-        path: user.image.path,
-        createdAt: user.image.createdAt,
+        image: encodedImage,
       },
     };
     res.status(200).json(USER);

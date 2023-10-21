@@ -15,9 +15,10 @@ const PersonalInfo = () => {
       try {
         const response = await axiosPrivate.get("/profile");
         setUser(response.data);
-        const imageBlob = await response.image.image.blob();
-        const imageUrl = URL.createObjectURL(imageBlob);
-        setImages([...images, imageUrl]);
+        // const imageBlob = await response.image.image.blob();
+        // const imageUrl = URL.createObjectURL(imageBlob);
+
+        setImages([response.data.image.image]);
       } catch (error) {
         setErrorMessage("Error fetching Personal:");
         console.error("Error fetching Personal:", error);
@@ -27,30 +28,30 @@ const PersonalInfo = () => {
   }, []);
 
   return (
-    <div className="profile">
-      <div className="profile-image">{/* image */}</div>
-      <div className="profile-info">
-        {user && (
-          <>
-            {images.map((imageUrl) =>
-              image ? (
-                <img src={imageUrl} alt={`Uploaded Image`} />
-              ) : (
-                <p>No image available</p>
-              )
-            )}
-            <h2 className="username">{user.username}</h2>
-            <p className="email">{user.email}</p>
-          </>
-        )}
+    <>
+      <div className="profile">
+        <div className="profile-image">{/* image */}</div>
+        <div className="profile-info">
+          {user && images ? (
+            <img
+              src={`data:image/jpeg;base64,${images}`}
+              alt={`Uploaded Image`}
+            />
+          ) : (
+            <p>No image available</p>
+          )}
+
+          <h2 className="username">{user.username}</h2>
+          <p className="email">{user.email}</p>
+        </div>
+        <button className="signOutBtn" onClick={() => navigate("/dashboard")}>
+          GO To Dashboard
+        </button>
+        <span>
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+        </span>
       </div>
-      <button className="signOutBtn" onClick={() => navigate("/dashboard")}>
-        GO To Dashboard
-      </button>
-      <span>
-        {errorMessage && <p className="error-message">{errorMessage}</p>}
-      </span>
-    </div>
+    </>
   );
 };
 

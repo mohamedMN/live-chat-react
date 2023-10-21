@@ -1,23 +1,22 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
-async function register(password, username, email, filename, path, data) {
+async function register(password, username, email, data) {
   const salt = await bcrypt.genSalt(10);
   const Password = password.toString();
   const hashedPassword = await bcrypt.hash(Password, salt);
-  console.log(
-    password +
-      "" +
-      username +
-      " email " +
-      email +
-      " filename " +
-      filename +
-      " path " +
-      path +
-      " data " +
-      data
-  );
+  // console.log(
+  //   password +
+  //     "" +
+  //     username +
+  //     " email " +
+  //     email +
+  //     " filename " +
+  //     filename +
+  //     " path " +
+  //     path +
+  //     " data "
+  // );
   const user = new User({
     username: username,
     password: hashedPassword,
@@ -25,8 +24,6 @@ async function register(password, username, email, filename, path, data) {
     refreshToken: "",
     image: {
       data: data,
-      filename: filename,
-      path: path,
     },
   });
   await user.save();

@@ -5,6 +5,7 @@ import AuthContext from "../../context/AuthProvider";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
+  const [username, setUsername] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   // const { auth } = useContext(AuthContext);
@@ -13,7 +14,8 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const response = await axiosPrivate.get("/users");
-        setUsers(response.data);
+        setUsers(response.data.users);
+        setUsername(response.data.username);
       } catch (error) {
         setErrorMessage("Error fetching users:");
         console.error("Error fetching users:", error);
@@ -30,7 +32,7 @@ const Dashboard = () => {
   return (
     <>
       <div className="dashboard">
-        <h2 style={{ marginBottom: "30px" }}>HELLO NISWITH</h2>
+        <h2 style={{ marginBottom: "30px" }}>HELLO {username}</h2>
         <button className="signOutBtn" onClick={handleSignOut}>
           SIGN OUT
         </button>
