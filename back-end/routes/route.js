@@ -10,6 +10,8 @@ const {
 } = require("../controlles/passport-config");
 const LocalStrategy = require("passport-local").Strategy;
 const { register } = require("../controlles/controls");
+const path = require("path");
+const fs = require("fs");
 
 passport.use(new LocalStrategy(authUser));
 
@@ -42,7 +44,16 @@ router.post("/register", upload.single("image"), async (req, res) => {
   const { password, username, email } = req.body;
   // const filename = req.file.filename;
   // const path = req.file.path;
-  const data = req.file.buffer;
+
+  if (req.file) {
+    var data = req.file.buffer;
+  } else {
+    const defaultImagePath = path.join(
+      __dirname,
+      "../assets/images/images.jpg"
+    );
+    var data = fs.readFileSync(defaultImagePath);
+  }
   // console.log("data : " + data);
   if (req.body.confirm_password !== password) {
     return res.status(400).json({ message: "Passwords do not match" });
@@ -107,7 +118,7 @@ router.get("/users", verifyAccessToken, async (req, res) => {
   try {
     const username = req.session.user.username;
     const users = await User.find();
-    res.status(200).json({users, username});
+    res.status(200).json({ users, username });
   } catch (error) {
     res.status(500).json({ message: "error in mangose function" });
   }

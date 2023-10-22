@@ -42,6 +42,12 @@ const Dashboard = () => {
         >
           GO To Profile
         </button>
+        <button
+          style={{ backgroundColor: "#0000FF", color: "white" }}
+          onClick={() => navigate("/chat")}
+        >
+          GO To Chat
+        </button>
 
         <span>
           {errorMessage && <p className="error-message">{errorMessage}</p>}
