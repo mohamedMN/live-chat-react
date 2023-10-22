@@ -3,7 +3,6 @@ const app = express();
 const routes = require("./routes/route");
 const mongoose = require("mongoose");
 const middleware = require("./middleware/middlware");
-const http = require("http");
 const socketIo = require("socket.io");
 //Load Environment Variables
 require("dotenv").config();
@@ -19,8 +18,11 @@ async function connection() {
 
 //call up conncetion function
 connection();
+const PORT = process.env.PORT;
+const server = app.listen(PORT, () => {
+  console.log("Server on start  http://localhost:" + PORT);
+});
 // socket server starting
-const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: "http://localhost:5173",
@@ -40,7 +42,3 @@ io.on("connection", (socket) => {
 app.use(middleware, routes);
 
 // start of the serveur
-const PORT = process.env.PORT;
-server.listen(PORT, () => {
-  console.log("Server on start  http://localhost:" + PORT);
-});
