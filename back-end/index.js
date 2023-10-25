@@ -1,8 +1,8 @@
 const express = require("express");
 const app = express();
-const routes = require("./routes/route");
+const routes = require("./routes/Route");
 const mongoose = require("mongoose");
-const middleware = require("./middleware/middlware");
+const middleware = require("./middleware/Middleware");
 const socketIo = require("socket.io");
 //Load Environment Variables
 require("dotenv").config();

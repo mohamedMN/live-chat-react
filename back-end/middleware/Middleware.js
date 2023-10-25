@@ -4,6 +4,7 @@ const passport = require("passport");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+
 // import body-parser for validation
 const cors = require("cors");
 const corsOptions = {
